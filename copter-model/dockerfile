@@ -1,0 +1,26 @@
+# Use the specified NVIDIA CUDA image
+FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+
+# Set the working directory
+WORKDIR /app
+
+# Install system dependencies including git
+RUN apt-get update && \
+    apt-get install -y swig cmake ffmpeg python3-opengl xvfb git && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean
+
+# Install Python packages
+RUN pip install -r https://raw.githubusercontent.com/huggingface/deep-rl-class/main/notebooks/unit4/requirements-unit4.txt && \
+    pip install numpy==1.24.3 && \
+    pip install pyvirtualdisplay && \
+    pip install pyglet==1.5.1 && \
+    pip install matplotlib && \
+    pip install torch && \
+    pip install imageio && \
+    pip install -U "huggingface_hub[cli]"
+# Set up a volume for live updates
+VOLUME ["/app"]
+
+# Start an interactive terminal, run the app script, and keep the shell open
+CMD ["bash", "-c", "huggingface-cli login --token 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 --add-to-git-credential && git config --global credential.helper store && python3 app.py; exec bash"]

@@ -1,0 +1,31 @@
+# Use the specified NVIDIA CUDA image
+FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+
+# Set up a volume for live updates
+VOLUME ["/app"]
+
+# Set the working directory
+WORKDIR /app
+
+COPY ./script.sh /app/
+
+
+# Install system dependencies including git
+RUN apt-get update && \
+    apt-get install -y swig cmake ffmpeg python3-opengl xvfb git wget unzip && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean
+
+# Install Python packages
+RUN pip3 install git+https://github.com/DLR-RM/rl-baselines3-zoo && \
+    pip3 install gymnasium[atari] && \
+    pip3 install gymnasium[accept-rom-license] && \
+    pip3 install pyvirtualdisplay && \
+    pip3 install --upgrade matplotlib && \
+    pip3 install matplotlib-inline && \
+    pip3 install opencv-python && \
+    pip3 install mlagents && \
+    pip3 install -U "huggingface_hub[cli]"
+
+# Start an interactive terminal, run the app script, and keep the shell open
+CMD ["bash", "-c", "/app/script.sh; exec bash"]

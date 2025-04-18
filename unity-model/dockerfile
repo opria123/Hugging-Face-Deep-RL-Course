@@ -1,0 +1,44 @@
+# Use the specified NVIDIA CUDA image
+FROM nvidia/cuda:12.6.2-cudnn-devel-ubuntu22.04
+
+# Set up a volume for live updates
+VOLUME ["/app"]
+
+# Set the working directory
+WORKDIR /app
+
+
+# Install system dependencies including git
+RUN apt-get update && \
+    apt-get install -y swig cmake ffmpeg python3-opengl xvfb git wget unzip && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean
+
+# Install Python packages
+RUN pip3 install git+https://github.com/DLR-RM/rl-baselines3-zoo && \
+    pip3 install gymnasium[atari] && \
+    pip3 install gymnasium[accept-rom-license] && \
+    pip3 install pyvirtualdisplay && \
+    pip3 install --upgrade matplotlib && \
+    pip3 install matplotlib-inline && \
+    pip3 install opencv-python && \
+    pip3 install mlagents && \
+    pip3 install -U "huggingface_hub[cli]"
+
+RUN git clone --depth 1 https://github.com/Unity-Technologies/ml-agents
+
+RUN pip3 install -e ./ml-agents/ml-agents-envs  && \
+    pip3 install -e ./ml-agents/ml-agents
+
+RUN mkdir ./training-envs-executables && \
+    mkdir ./training-envs-executables/linux
+
+RUN wget "https://github.com/huggingface/Snowball-Target/raw/main/SnowballTarget.zip" -O ./training-envs-executables/linux/SnowballTarget.zip
+
+RUN unzip -d ./training-envs-executables/linux/ ./training-envs-executables/linux/SnowballTarget.zip
+
+RUN chmod -R 755 ./training-envs-executables/linux/SnowballTarget
+
+
+# Start an interactive terminal, run the app script, and keep the shell open
+CMD ["bash", "-c", "huggingface-cli login --token <token> --add-to-git-credential && git config --global credential.helper store && python3 -m mlagents-learn /app/SnowballTarget.yaml --env=./training-envs-executables/linux/SnowballTarget/SnowballTarget --run-id=SnowballTarget1 --no-graphics && python3 -m mlagents-push-to-hf  --run-id=SnowballTarget1 --local-dir=./results/SnowballTarget1 --repo-id=opria132/ppo-SnowballTarget  --commit-message=train; exec bash"]

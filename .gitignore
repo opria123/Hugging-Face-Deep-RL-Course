@@ -1,6 +1,7 @@
-.\unity-model\ml-agents
-.\unity-model\results
-.\unity-model\training-envs-executables
-.\pyramids-model\ml-agents
-.\pyramids-model\results
-.\pyramids-model\training-envs-executables
+# Ignore directories for Unity models
+unity-model/ml-agents/
+unity-model/results/
+unity-model/training-envs-executables/
+pyramids-model/ml-agents/
+pyramids-model/results/
+pyramids-model/training-envs-executables/
